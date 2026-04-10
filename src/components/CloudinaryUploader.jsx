@@ -1,39 +1,47 @@
-import { WidgetLoader, Widget } from 'react-cloudinary-upload-widget';
+import { useEffect, useRef } from "react";
 
 const CloudinaryUploader = ({ onUploadSuccess, buttonText = "Télécharger un média", className = "" }) => {
-  const handleSuccess = (result) => {
-    const mediaUrl = result?.info?.secure_url;
-    if (mediaUrl && onUploadSuccess) {
-      onUploadSuccess(mediaUrl);
+  const cloudinaryRef = useRef();
+  const widgetRef = useRef();
+
+  useEffect(() => {
+    // Charger le script Cloudinary une seule fois
+    if (!window.cloudinary) {
+      const script = document.createElement('script');
+      script.src = 'https://upload-widget.cloudinary.com/global/all.js';
+      script.async = true;
+      document.body.appendChild(script);
     }
-  };
 
-  const handleFailure = (error) => {
-    console.error("Erreur d'upload Cloudinary:", error);
-    alert("Échec de l'upload. Vérifiez la console.");
-  };
+    cloudinaryRef.current = window.cloudinary;
+    widgetRef.current = cloudinaryRef.current?.createUploadWidget(
+      {
+        cloudName: 'dqixuyqqh',
+        uploadPreset: 'AsrarPro',
+        sources: ['local', 'url', 'camera', 'dropbox', 'google-drive'],
+        resourceType: 'auto',
+        multiple: false,
+        cropping: false,
+      },
+      (error, result) => {
+        if (!error && result && result.event === "success") {
+          onUploadSuccess(result.info.secure_url);
+        }
+        if (error) {
+          console.error("Erreur Cloudinary:", error);
+        }
+      }
+    );
+  }, [onUploadSuccess]);
 
-  const cloudName = 'dqixuyqqh';
-  const uploadPreset = 'AsrarPro';
+  const handleClick = () => {
+    widgetRef.current?.open();
+  };
 
   return (
-    <>
-      <WidgetLoader />
-      <Widget
-        sources={['local', 'url', 'camera', 'dropbox', 'google-drive']}
-        resourceType={'auto'}
-        cloudName={cloudName}
-        uploadPreset={uploadPreset}
-        buttonText={buttonText}
-        className={className || "cloudinary-uploader-btn"}
-        onSuccess={handleSuccess}
-        onFailure={handleFailure}
-        logging={false}
-        cropping={false}
-        multiple={false}
-        autoClose={true}
-      />
-    </>
+    <button type="button" onClick={handleClick} className={className || "cloudinary-uploader-btn"}>
+      {buttonText}
+    </button>
   );
 };
 
