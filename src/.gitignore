@@ -1,0 +1,28 @@
+# Dépendances
+node_modules
+/.pnp
+.pnp.js
+
+# Build
+/dist
+/build
+
+# Fichiers d'environnement (optionnel - Firebase peut rester public)
+.env
+.env.local
+.env.production
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Éditeur
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
