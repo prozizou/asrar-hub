@@ -1,38 +1,67 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import {
-  FiMenu, FiX, FiChevronRight, FiUsers, FiBookOpen,
-  FiGrid, FiZap, FiShield, FiLock, FiEye, FiGithub,
-  FiTwitter, FiYoutube, FiDisc, FiLink, FiMessageCircle
+  FiMenu, FiX, FiChevronRight, FiBookOpen, FiZap, FiShield,
+  FiLock, FiEye, FiGithub, FiTwitter, FiYoutube, FiDisc,
+  FiMessageCircle, FiMail, FiPhone, FiCalendar, FiStar, FiCheck
 } from "react-icons/fi";
+import { FaWhatsapp } from "react-icons/fa";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("solutions");
+  const [showExitPopup, setShowExitPopup] = useState(false);
+  const [emailForm, setEmailForm] = useState({ name: "", email: "" });
+  const [showFaq, setShowFaq] = useState(null);
+  const exitIntentRef = useRef(false);
 
-  const handleGetStarted = () => {
-    navigate("/login");
+  const handleGetStarted = () => navigate("/login");
+
+  // ✅ VOTRE NUMÉRO WHATSAPP (format international sans le +)
+  const whatsappMessage = encodeURIComponent(
+    "Bonjour, je suis intéressé(e) par ASRAR HUB et j'aimerais en savoir plus sur vos secrets mystiques."
+  );
+  const whatsappLink = `https://wa.me/221786144737?text=${whatsappMessage}`;
+
+  // Pop-up d'intention de sortie
+  useEffect(() => {
+    const handleMouseLeave = (e) => {
+      if (e.clientY <= 0 && !exitIntentRef.current) {
+        exitIntentRef.current = true;
+        setShowExitPopup(true);
+      }
+    };
+    document.addEventListener("mouseleave", handleMouseLeave);
+    return () => document.removeEventListener("mouseleave", handleMouseLeave);
+  }, []);
+
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    // Ici, connectez à votre service d'email (Firebase, API, etc.)
+    alert(`Merci ${emailForm.name} ! Votre guide vous sera envoyé à l'adresse indiquée.`);
+    setShowExitPopup(false);
+    setEmailForm({ name: "", email: "" });
   };
 
   const solutions = [
     {
       icon: <FiBookOpen size={24} />,
       title: "Bibliothèque de Secrets",
-      description: "Cinq catégories de connaissances ésotériques : Déblocage, Domptage, Ilham, Ouverture, Protection."
+      description: "Accédez à des connaissances ésotériques classées par objectif. Déblocage, Domptage, Ilham, Ouverture, Protection."
     },
     {
-      icon: <FiLink size={24} />,
-      title: "Hub de Liens",
-      description: "Centralisez tous vos sites et applications favoris dans une interface élégante."
+      icon: <FiZap size={24} />,
+      title: "Consultation Rapide",
+      description: "Discutez directement avec un expert sur WhatsApp pour des conseils personnalisés."
     },
     {
-      icon: <FiMessageCircle size={24} />,
-      title: "Messagerie Personnelle",
-      description: "Un espace de discussion privé pour vos réflexions et notes importantes."
+      icon: <FiMail size={24} />,
+      title: "Guide Gratuit",
+      description: "Recevez notre PDF exclusif 'Les 7 clés de la spiritualité pratique' par email."
     }
   ];
 
@@ -40,43 +69,64 @@ const LandingPage = () => {
     { category: "Déblocage", description: "Levez les blocages spirituels et énergétiques.", icon: <FiLock />, color: "#3b82f6" },
     { category: "Domptage", description: "Maîtrisez les forces invisibles.", icon: <FiZap />, color: "#f59e0b" },
     { category: "Ilham", description: "Recevez l'inspiration divine et les songes.", icon: <FiEye />, color: "#10b981" },
-    { category: "Ouverture", description: "Ouvrez les portes de la chance et de l'abondance.", icon: <FiBookOpen />, color: "#8b5cf6" },
+    { category: "Ouverture", description: "Ouvrez les portes de la chance.", icon: <FiBookOpen />, color: "#8b5cf6" },
     { category: "Protection", description: "Boucliers sacrés contre les influences négatives.", icon: <FiShield />, color: "#ef4444" }
   ];
 
-  const applications = [
-    { name: "Secrets Mystiques", desc: "Explorez des formules et rituels ancestraux classés par objectif." },
-    { name: "Liens Rapides", desc: "Vos sites préférés à portée de clic, avec icônes et descriptions." },
-    { name: "Chat Privé", desc: "Discutez, notez, échangez avec vous-même ou vos proches." }
+  const testimonials = [
+    { name: "Aïcha D.", text: "Grâce aux secrets de déblocage, ma vie professionnelle a complètement changé.", rating: 5 },
+    { name: "Moussa K.", text: "Le chat en direct avec l'expert m'a rassuré immédiatement. Je recommande !", rating: 5 },
+    { name: "Fatima B.", text: "Le PDF gratuit est une mine d'or. J'ai commencé à pratiquer dès le lendemain.", rating: 4 }
   ];
 
-  const team = [
-    { name: "Asrar Admin", role: "Gardien du Savoir", img: "https://ui-avatars.com/api/?name=Asrar+Admin&background=3b82f6&color=fff" },
-    { name: "Maître Mystique", role: "Expert Rituels", img: "https://ui-avatars.com/api/?name=Maître+Mystique&background=8b5cf6&color=fff" },
-    { name: "Sage Numérique", role: "Architecte du Hub", img: "https://ui-avatars.com/api/?name=Sage+Numérique&background=10b981&color=fff" },
-    { name: "Guide Spirituel", role: "Conseiller Ésotérique", img: "https://ui-avatars.com/api/?name=Guide+Spirituel&background=f59e0b&color=fff" }
+  const faqItems = [
+    { q: "Comment accéder aux secrets ?", a: "Il vous suffit de créer un compte gratuit et de naviguer dans les catégories." },
+    { q: "Les consultations WhatsApp sont-elles payantes ?", a: "La première consultation est offerte. Ensuite, des forfaits sont disponibles." },
+    { q: "Mes données sont-elles sécurisées ?", a: "Absolument. Nous utilisons Firebase avec authentification Google et chiffrement." }
   ];
 
   return (
     <div className="landing-page">
+      {/* Widget WhatsApp Flottant */}
+      <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="whatsapp-float">
+        <FaWhatsapp size={28} />
+        <span className="whatsapp-tooltip">Discutez avec un expert</span>
+      </a>
+
+      {/* Pop-up d'intention de sortie */}
+      {showExitPopup && (
+        <div className="exit-popup-overlay" onClick={() => setShowExitPopup(false)}>
+          <div className="exit-popup" onClick={(e) => e.stopPropagation()}>
+            <button className="close-popup" onClick={() => setShowExitPopup(false)}><FiX /></button>
+            <h3>🎁 Recevez votre Guide Gratuit</h3>
+            <p>Inscrivez-vous pour obtenir "Les 7 clés de la spiritualité pratique"</p>
+            <form onSubmit={handleEmailSubmit}>
+              <input type="text" placeholder="Votre prénom" value={emailForm.name} onChange={(e) => setEmailForm({...emailForm, name: e.target.value})} required />
+              <input type="email" placeholder="Votre email" value={emailForm.email} onChange={(e) => setEmailForm({...emailForm, email: e.target.value})} required />
+              <button type="submit" className="btn-primary">Envoyez-moi le guide</button>
+            </form>
+            <p className="privacy-note">🔒 Vos données restent confidentielles</p>
+          </div>
+        </div>
+      )}
+
       <header className="landing-header">
         <div className="header-container">
           <div className="logo">
             <span className="logo-icon">✦</span>
             <span className="logo-text">ASRAR HUB</span>
           </div>
-
           <nav className={`main-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
             <button className={`nav-link ${activeTab === 'solutions' ? 'active' : ''}`} onClick={() => { setActiveTab('solutions'); setMobileMenuOpen(false); }}>Solutions</button>
-            <button className={`nav-link ${activeTab === 'products' ? 'active' : ''}`} onClick={() => { setActiveTab('products'); setMobileMenuOpen(false); }}>Produits</button>
-            <button className={`nav-link ${activeTab === 'applications' ? 'active' : ''}`} onClick={() => { setActiveTab('applications'); setMobileMenuOpen(false); }}>Applications</button>
+            <button className={`nav-link ${activeTab === 'products' ? 'active' : ''}`} onClick={() => { setActiveTab('products'); setMobileMenuOpen(false); }}>Secrets</button>
+            <button className={`nav-link ${activeTab === 'testimonials' ? 'active' : ''}`} onClick={() => { setActiveTab('testimonials'); setMobileMenuOpen(false); }}>Avis</button>
+            <button className={`nav-link ${activeTab === 'faq' ? 'active' : ''}`} onClick={() => { setActiveTab('faq'); setMobileMenuOpen(false); }}>FAQ</button>
             {user ? (
-              <button className="nav-cta" onClick={() => navigate("/dashboard")}>Accéder au Dashboard</button>
+              <button className="nav-cta" onClick={() => navigate("/dashboard")}>Dashboard</button>
             ) : (
               <button className="nav-cta" onClick={handleGetStarted}>Se connecter</button>
             )}
           </nav>
-
           <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
@@ -87,15 +137,17 @@ const LandingPage = () => {
         <div className="hero-container">
           <div className="hero-content">
             <h1 className="hero-title">Votre Portail vers <br /><span className="gradient-text">la Connaissance Mystique</span></h1>
-            <p className="hero-description">Accédez à des secrets ancestraux, organisez vos liens essentiels et communiquez en privé. Un espace sacré numérique.</p>
+            <p className="hero-description">Accédez à des secrets ancestraux et bénéficiez d'un accompagnement personnalisé.</p>
             <div className="hero-buttons">
-              <button className="btn-primary" onClick={handleGetStarted}>Commencer gratuitement <FiChevronRight /></button>
+              <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="btn-primary">
+                <FaWhatsapp size={20} /> Discutez avec un expert
+              </a>
               <button className="btn-secondary" onClick={() => setActiveTab('products')}>Découvrir les secrets</button>
             </div>
             <div className="hero-stats">
               <div className="stat-item"><span className="stat-number">5+</span><span className="stat-label">Catégories</span></div>
               <div className="stat-item"><span className="stat-number">100%</span><span className="stat-label">Sécurisé</span></div>
-              <div className="stat-item"><span className="stat-number">24/7</span><span className="stat-label">Accessible</span></div>
+              <div className="stat-item"><span className="stat-number">24/7</span><span className="stat-label">Support</span></div>
             </div>
           </div>
           <div className="hero-visual">
@@ -122,6 +174,7 @@ const LandingPage = () => {
               </div>
             </div>
           )}
+
           {activeTab === 'products' && (
             <div className="products-showcase">
               <div className="section-header"><h2>Notre bibliothèque de secrets</h2><p>Explorez les cinq piliers de la connaissance mystique.</p></div>
@@ -132,12 +185,34 @@ const LandingPage = () => {
               </div>
             </div>
           )}
-          {activeTab === 'applications' && (
-            <div className="applications-section">
-              <div className="section-header"><h2>Applications intégrées</h2><p>Des outils puissants pour votre développement personnel.</p></div>
-              <div className="apps-list">
-                {applications.map((app, idx) => (
-                  <div key={idx} className="app-item"><h4>{app.name}</h4><p>{app.desc}</p></div>
+
+          {activeTab === 'testimonials' && (
+            <div className="testimonials-section">
+              <div className="section-header"><h2>Ce que disent nos utilisateurs</h2></div>
+              <div className="testimonials-grid">
+                {testimonials.map((t, idx) => (
+                  <div key={idx} className="testimonial-card">
+                    <div className="stars">{Array(t.rating).fill(<FiStar size={16} fill="#fbbf24" color="#fbbf24" />)}</div>
+                    <p>"{t.text}"</p>
+                    <span className="author">— {t.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'faq' && (
+            <div className="faq-section">
+              <div className="section-header"><h2>Questions fréquentes</h2></div>
+              <div className="faq-list">
+                {faqItems.map((item, idx) => (
+                  <div key={idx} className="faq-item">
+                    <button className="faq-question" onClick={() => setShowFaq(showFaq === idx ? null : idx)}>
+                      <span>{item.q}</span>
+                      <FiChevronRight className={`faq-icon ${showFaq === idx ? 'open' : ''}`} />
+                    </button>
+                    {showFaq === idx && <div className="faq-answer"><p>{item.a}</p></div>}
+                  </div>
                 ))}
               </div>
             </div>
@@ -145,20 +220,19 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="community-section">
-        <div className="community-container">
-          <div className="community-header"><h2>Rejoignez notre communauté</h2><p>Connectez-vous avec d'autres initiés et partagez vos expériences.</p></div>
-          <div className="community-content">
-            <div className="discord-card">
-              <div className="discord-icon"><FiDisc size={32} /></div>
-              <h3>ASRAR HUB Discord</h3>
-              <p>Un espace en temps réel pour poser des questions, partager des découvertes et trouver du soutien.</p>
-              <button className="btn-outline">Rejoindre</button>
-            </div>
-            <div className="team-grid">
-              {team.map((member, idx) => (
-                <div key={idx} className="team-card"><img src={member.img} alt={member.name} /><h4>{member.name}</h4><p className="team-role">{member.role}</p><p className="team-bio">Gardien des connaissances et contributeur actif.</p><div className="team-social"><FiTwitter size={16} /><FiGithub size={16} /></div></div>
-              ))}
+      <section className="social-proof-section">
+        <div className="social-proof-container">
+          <div className="trust-badges">
+            <div className="badge"><FiCheck /> Paiement 100% sécurisé</div>
+            <div className="badge"><FiCheck /> Support WhatsApp 24/7</div>
+            <div className="badge"><FiCheck /> Données chiffrées</div>
+          </div>
+          <div className="partners">
+            <p>Ils nous font confiance :</p>
+            <div className="partner-logos">
+              <span>🔮 Mystic Academy</span>
+              <span>🌙 Spiritualité Moderne</span>
+              <span>✨ Éveil Cosmique</span>
             </div>
           </div>
         </div>
@@ -167,12 +241,28 @@ const LandingPage = () => {
       <footer className="landing-footer">
         <div className="footer-container">
           <div className="footer-columns">
-            <div className="footer-col"><h4>Séries Web</h4><ul><li>Introduction aux Secrets</li><li>Guides de Certification</li><li>Rituels Hebdomadaires</li></ul></div>
-            <div className="footer-col"><h4>Podcasts</h4><ul><li>Voix de l'Invisible</li><li>Techniques Mystiques</li><li>État de l'Éveil</li></ul></div>
-            <div className="footer-col"><h4>Contenus</h4><ul><li>Dictionnaire des Symboles</li><li>Rapport Annuel</li></ul></div>
-            <div className="footer-col"><h4>Premium</h4><p>Essayez gratuitement pendant 14 jours.</p><button className="btn-small">Commencer</button></div>
+            <div className="footer-col">
+              <h4>Contact</h4>
+              <ul>
+                <li><FiMail /> prozizou298@gmail.com</li>
+                <li><FiPhone /> +221 78 614 47 37</li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Réseaux</h4>
+              <div className="footer-social"><FiTwitter size={20} /><FiYoutube size={20} /><FiDisc size={20} /></div>
+            </div>
+            <div className="footer-col">
+              <h4>Légal</h4>
+              <ul>
+                <li>Mentions légales</li>
+                <li>Confidentialité</li>
+              </ul>
+            </div>
           </div>
-          <div className="footer-bottom"><div className="social-links"><FiTwitter size={20} /><FiYoutube size={20} /><FiGithub size={20} /></div><p className="copyright">© 2026 ASRAR HUB. Tous droits réservés.</p></div>
+          <div className="footer-bottom">
+            <p className="copyright">© 2026 ASRAR HUB. Tous droits réservés.</p>
+          </div>
         </div>
       </footer>
     </div>

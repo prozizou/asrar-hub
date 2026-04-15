@@ -1,39 +1,24 @@
 import { useState, useEffect } from "react";
-import { ref, onValue, push, remove, update } from "firebase/database";
-import { db } from "../../firebase";
-import { FiLink, FiExternalLink, FiPlus, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { ref, onValue, push, remove, update, set } from "firebase/database";
+import { db, auth } from "../../firebase";
+import { 
+  FiLink, FiPlus, FiTrash2, FiEdit2, FiDownload, 
+  FiThumbsUp, FiThumbsDown, FiMessageSquare, FiSend, FiChevronDown, FiChevronUp 
+} from "react-icons/fi";
 import { useAdmin } from "../../hooks/useAdmin";
-
-const LinkIcon = ({ url, name }) => {
-  const [imgLoading, setImgLoading] = useState(true);
-  const [imgError, setImgError] = useState(false);
-  const getFaviconUrl = (urlString) => {
-    try {
-      const hostname = new URL(urlString).hostname;
-      return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
-    } catch { return null; }
-  };
-  const faviconUrl = getFaviconUrl(url);
-  const fallbackImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff&size=64&bold=true`;
-
-  return (
-    <div className="link-icon-wrapper">
-      {imgLoading && <div className="link-icon-loader"><div className="circular-progress-small"></div></div>}
-      {!imgError && faviconUrl ? (
-        <img src={faviconUrl} alt={name} onLoad={() => setImgLoading(false)} onError={() => { setImgLoading(false); setImgError(true); }} style={{ display: imgLoading ? 'none' : 'block' }} className="link-favicon" />
-      ) : (
-        <img src={fallbackImage} alt={name} onLoad={() => setImgLoading(false)} style={{ display: imgLoading ? 'none' : 'block' }} className="link-fallback-icon" />
-      )}
-    </div>
-  );
-};
+import CloudinaryUploader from "../CloudinaryUploader";
 
 const WidgetLiens = () => {
   const [liens, setLiens] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ nom: "", url: "" });
+  const [formData, setFormData] = useState({ nom: "", url: "", description: "", image: "" });
+  
+  const [activeReviewId, setActiveReviewId] = useState(null);
+  const [newReview, setNewReview] = useState("");
+  
   const isAdmin = useAdmin();
+  const user = auth.currentUser;
 
   useEffect(() => {
     const liensRef = ref(db, "liens");
@@ -57,6 +42,8 @@ const WidgetLiens = () => {
     const lienData = {
       nom: formData.nom.trim(),
       url: finalUrl,
+      description: formData.description.trim(),
+      image: formData.image,
       updatedAt: Date.now()
     };
 
@@ -66,7 +53,10 @@ const WidgetLiens = () => {
         await update(lienRef, lienData);
       } else {
         const liensRef = ref(db, "liens");
-        await push(liensRef, { ...lienData, createdAt: Date.now() });
+        await push(liensRef, { 
+          ...lienData, 
+          createdAt: Date.now() 
+        });
       }
       resetForm();
     } catch (error) {
@@ -75,30 +65,75 @@ const WidgetLiens = () => {
   };
 
   const handleEdit = (lien) => {
-    setFormData({ nom: lien.nom || "", url: lien.url || "" });
+    setFormData({ 
+      nom: lien.nom || "", 
+      url: lien.url || "",
+      description: lien.description || "",
+      image: lien.image || ""
+    });
     setEditingId(lien.id);
     setShowForm(true);
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Supprimer ce lien ?")) return;
+    if (!window.confirm("Supprimer définitivement cette application/lien ?")) return;
     const lienRef = ref(db, `liens/${id}`);
     await remove(lienRef);
     if (editingId === id) resetForm();
   };
 
   const resetForm = () => {
-    setFormData({ nom: "", url: "" });
+    setFormData({ nom: "", url: "", description: "", image: "" });
     setEditingId(null);
     setShowForm(false);
   };
 
+  const handleImageUpload = (url) => {
+    setFormData(prev => ({ ...prev, image: url }));
+  };
+
+  // --- NOUVELLE LOGIQUE DE TÉLÉCHARGEMENT PAR UID ---
+  const handleDownload = async (lien) => {
+    if (user) {
+      // Enregistre l'UID pour ne compter l'ouverture qu'une seule fois par utilisateur
+      const downloadRef = ref(db, `liens/${lien.id}/downloads/${user.uid}`);
+      await set(downloadRef, true);
+    }
+    window.open(lien.url, "_blank");
+  };
+
+  const handleVote = async (lien, voteType) => {
+    if (!user) return;
+    
+    const voteRef = ref(db, `liens/${lien.id}/votes/${user.uid}`);
+    const currentVote = lien.votes?.[user.uid];
+
+    if (currentVote === voteType) {
+      await remove(voteRef); // Annule le vote
+    } else {
+      await set(voteRef, voteType); // Applique le nouveau vote
+    }
+  };
+
+  const submitReview = async (e, lienId) => {
+    e.preventDefault();
+    if (!newReview.trim() || !user) return;
+    
+    const reviewsRef = ref(db, `liens/${lienId}/reviews`);
+    await push(reviewsRef, {
+      text: newReview.trim(),
+      author: user.displayName || "Anonyme",
+      date: Date.now()
+    });
+    setNewReview("");
+  };
+
   return (
-    <div className="widget">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h3><FiLink /> Liens & Apps</h3>
+    <div className="widget widget-glass">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <h3 style={{ margin: 0 }}><FiLink /> Applications & Ressources</h3>
         {isAdmin && (
-          <button className="icon-btn" onClick={() => { resetForm(); setShowForm(!showForm); }} title="Ajouter un lien">
+          <button className="icon-btn" onClick={() => { resetForm(); setShowForm(!showForm); }} title="Ajouter une App">
             <FiPlus size={20} />
           </button>
         )}
@@ -106,8 +141,15 @@ const WidgetLiens = () => {
 
       {isAdmin && showForm && (
         <form onSubmit={handleAddOrUpdate} className="add-secret-form">
-          <input type="text" placeholder="Nom" value={formData.nom} onChange={(e) => setFormData({ ...formData, nom: e.target.value })} required />
-          <input type="text" placeholder="URL" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} required />
+          <input type="text" placeholder="Nom de l'application / lien" value={formData.nom} onChange={(e) => setFormData({ ...formData, nom: e.target.value })} required />
+          <input type="text" placeholder="URL (Lien vers l'app)" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} required />
+          <textarea placeholder="Description courte de l'application..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} />
+          
+          <div style={{ marginBottom: '12px' }}>
+            <CloudinaryUploader onUploadSuccess={handleImageUpload} buttonText="Choisir l'icône de l'App" />
+            {formData.image && <img src={formData.image} alt="Aperçu icône" style={{ width: '48px', height: '48px', borderRadius: '10px', marginTop: '8px', objectFit: 'cover' }} />}
+          </div>
+
           <div className="form-actions">
             <button type="submit" className="primary">{editingId ? 'Mettre à jour' : 'Ajouter'}</button>
             <button type="button" onClick={resetForm}>Annuler</button>
@@ -115,32 +157,114 @@ const WidgetLiens = () => {
         </form>
       )}
 
-      <div className="liens-list-playstore">
+      <div className="liens-list-playstore" style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '8px' }}>
         {liens.length === 0 ? (
-          <p style={{ color: '#6b7280', textAlign: 'center', padding: '20px 0' }}>Aucun lien pour le moment.</p>
+          <p className="empty-state">Aucune application disponible pour le moment.</p>
         ) : (
-          liens.map(lien => (
-            <div key={lien.id} style={{ position: 'relative' }}>
-              <a href={lien.url} target="_blank" rel="noopener noreferrer" className="lien-card">
-                <LinkIcon url={lien.url} name={lien.nom} />
-                <div className="lien-info">
-                  <span className="lien-nom">{lien.nom}</span>
-                  <span className="lien-url">{lien.url}</span>
-                </div>
-                <FiExternalLink className="lien-external-icon" />
-              </a>
-              {isAdmin && (
-                <div style={{ position: 'absolute', top: 8, right: 40, display: 'flex', gap: '4px' }}>
-                  <button className="icon-btn delete-lien-btn" onClick={() => handleEdit(lien)} title="Modifier">
-                    <FiEdit2 size={14} />
+          liens.map(lien => {
+            const reviewsArray = lien.reviews ? Object.values(lien.reviews) : [];
+            const votesObj = lien.votes || {};
+            
+            const likesCount = Object.values(votesObj).filter(v => v === 'like').length;
+            const dislikesCount = Object.values(votesObj).filter(v => v === 'dislike').length;
+            const userVote = user ? votesObj[user.uid] : null;
+
+            // Compatibilité avec l'ancien système de compteur vs nouveau système par UID
+            const downloadsCount = typeof lien.downloads === 'object' && lien.downloads !== null 
+              ? Object.keys(lien.downloads).length 
+              : (!isNaN(lien.downloads) ? lien.downloads : 0);
+            
+            return (
+              <div key={lien.id} className="playstore-card">
+                <div className="ps-header">
+                  {lien.image ? (
+                    <img src={lien.image} alt={lien.nom} className="ps-icon" />
+                  ) : (
+                    <div className="ps-icon">{lien.nom.charAt(0).toUpperCase()}</div>
+                  )}
+                  
+                  <div className="ps-info">
+                    <h4 className="ps-title">{lien.nom}</h4>
+                    <p className="ps-desc">{lien.description || "Aucune description disponible."}</p>
+                  </div>
+
+                  <button className="ps-action-btn" onClick={() => handleDownload(lien)}>
+                    Ouvrir
                   </button>
-                  <button className="icon-btn delete-lien-btn" onClick={() => handleDelete(lien.id)} title="Supprimer">
-                    <FiTrash2 size={14} />
-                  </button>
                 </div>
-              )}
-            </div>
-          ))
+
+                <div className="ps-stats">
+                  <span className="ps-stat-btn" title="Ouvertures uniques">
+                    <FiDownload /> {downloadsCount}
+                  </span>
+                  
+                  <button 
+                    className={`ps-stat-btn ${userVote === 'like' ? 'user-liked' : ''}`} 
+                    onClick={() => handleVote(lien, 'like')}
+                  >
+                    <FiThumbsUp /> {likesCount}
+                  </button>
+                  <button 
+                    className={`ps-stat-btn ${userVote === 'dislike' ? 'user-disliked' : ''}`} 
+                    onClick={() => handleVote(lien, 'dislike')}
+                  >
+                    <FiThumbsDown /> {dislikesCount}
+                  </button>
+
+                  <button 
+                    className="ps-stat-btn" 
+                    onClick={() => setActiveReviewId(activeReviewId === lien.id ? null : lien.id)}
+                  >
+                    <FiMessageSquare /> {reviewsArray.length} Avis
+                    {activeReviewId === lien.id ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
+                  </button>
+                  
+                  {isAdmin && (
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
+                      <button className="icon-btn" onClick={() => handleEdit(lien)}><FiEdit2 size={14} /></button>
+                      <button className="icon-btn" onClick={() => handleDelete(lien.id)}><FiTrash2 size={14} /></button>
+                    </div>
+                  )}
+                </div>
+
+                {activeReviewId === lien.id && (
+                  <div className="ps-reviews-section">
+                    <div className="ps-reviews-list">
+                      {reviewsArray.length > 0 ? (
+                        reviewsArray.map((rev, idx) => (
+                          <div key={idx} className="ps-review-item">
+                            <div className="ps-review-header">
+                              <span className="ps-review-author">{rev.author}</span>
+                              <span>{new Date(rev.date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="ps-review-text">{rev.text}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '4px 0', textAlign: 'center' }}>
+                          Soyez le premier à donner un avis !
+                        </p>
+                      )}
+                    </div>
+                    
+                    <form className="ps-review-form" onSubmit={(e) => submitReview(e, lien.id)}>
+                      <input 
+                        type="text" 
+                        placeholder="Donner un avis..." 
+                        value={newReview}
+                        onChange={(e) => setNewReview(e.target.value)}
+                        style={{ borderRadius: '10px' }}
+                      />
+                      <button type="submit" className="primary" style={{ padding: '8px 12px', borderRadius: '10px' }}>
+                        <FiSend size={16} />
+                      </button>
+                    </form>
+                  </div>
+                )}
+                
+              </div>
+            );
+          })
         )}
       </div>
     </div>

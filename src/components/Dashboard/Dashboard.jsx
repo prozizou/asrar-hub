@@ -19,10 +19,20 @@ const Dashboard = () => {
         </button>
       </header>
       
-      <div className="widgets-grid">
-        <WidgetSecrets />
-        <WidgetLiens />
-        <WidgetChat />
+      {/* Nouvelle disposition des widgets */}
+      <div className="dashboard-layout">
+        
+        {/* Ligne du haut : 100% de la largeur */}
+        <div className="widget-full-width">
+          <WidgetSecrets />
+        </div>
+
+        {/* Ligne du bas : Séparée en deux colonnes */}
+        <div className="widgets-half-grid">
+          <WidgetLiens />
+          <WidgetChat />
+        </div>
+
       </div>
     </div>
   );

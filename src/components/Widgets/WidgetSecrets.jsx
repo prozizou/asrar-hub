@@ -259,32 +259,62 @@ const WidgetSecrets = () => {
         {currentSecrets.length === 0 ? (
           <p className="empty-state">Aucun secret dans cette catégorie.</p>
         ) : (
-          currentSecrets.map(secret => (
-            <div key={secret.id} className="secret-item-glass">
-              <div className="secret-main" onClick={() => openDetail(secret)}>
-                <span className="secret-title-glass" style={{ fontFamily: "'Calibri', 'Segoe UI', sans-serif" }}>{secret.faida}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {isAdmin && (
-                    <>
-                      <button className="icon-btn" onClick={(e) => { e.stopPropagation(); handleEdit(secret); }} title="Modifier">
-                        <FiEdit2 size={14} />
-                      </button>
-                      <button className="icon-btn" onClick={(e) => { e.stopPropagation(); handleDelete(secret.id); }} title="Supprimer">
-                        <FiTrash2 size={14} />
-                      </button>
-                    </>
-                  )}
-                  <FiChevronRight className="secret-arrow" />
+          currentSecrets.map(secret => {
+            // Vérification si le média attaché est une image
+            const isImage = secret.img && /\.(jpg|jpeg|png|gif|webp)$/i.test(secret.img);
+
+            return (
+              <div key={secret.id} className="secret-item-glass">
+                <div className="secret-main" onClick={() => openDetail(secret)} style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  
+                  {/* PARTIE GAUCHE : Titre du secret et indicateur de document */}
+                  <div style={{ flex: 1, paddingRight: '12px' }}>
+                    <span className="secret-title-glass" style={{ fontFamily: "'Calibri', 'Segoe UI', sans-serif", display: 'block' }}>
+                      {secret.faida}
+                    </span>
+                    {/* Si c'est un média mais PAS une image (ex: PDF ou Audio), on met un petit texte en dessous */}
+                    {secret.img && !isImage && (
+                      <div className="secret-has-image" style={{ marginTop: '6px', fontSize: '0.75rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <FiFile size={12} /> Document joint
+                      </div>
+                    )}
+                  </div>
+
+                  {/* PARTIE DROITE : Miniature de l'image, boutons d'admin et chevron */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    
+                    {/* La miniature de l'image s'affiche ici si c'est bien une image */}
+                    {isImage && (
+                      <img 
+                        src={secret.img} 
+                        alt="Aperçu" 
+                        className="secret-thumbnail"
+                      />
+                    )}
+
+                    {/* Actions d'administration */}
+                    {isAdmin && (
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); handleEdit(secret); }} title="Modifier">
+                          <FiEdit2 size={14} />
+                        </button>
+                        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); handleDelete(secret.id); }} title="Supprimer">
+                          <FiTrash2 size={14} />
+                        </button>
+                      </div>
+                    )}
+                    
+                    <FiChevronRight className="secret-arrow" />
+                  </div>
+
                 </div>
               </div>
-              {secret.img && (
-                <div className="secret-has-image"><FiImage /> Média disponible</div>
-              )}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
+      {/* Modale d'affichage détaillé du secret */}
       {selectedSecret && (
         <div className="modal-overlay-glass" onClick={closeDetail}>
           <div className="modal-glass" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Calibri', 'Segoe UI', sans-serif" }}>

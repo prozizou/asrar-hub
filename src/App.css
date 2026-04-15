@@ -144,11 +144,37 @@ body {
   color: #fca5a5;
 }
 
-/* Grille des widgets */
-.widgets-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+/* --- Disposition du Dashboard --- */
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
   gap: 24px;
+}
+
+/* Le widget Secrets prend toute la largeur */
+.widget-full-width {
+  width: 100%;
+}
+
+/* Les widgets du bas se partagent l'espace (50% / 50%) */
+.widgets-half-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start; /* Empêche les widgets de s'étirer s'ils n'ont pas la même hauteur */
+}
+
+/* Le widget de Chat peut grandir verticalement si besoin */
+.chat-widget, .liens-widget {
+  height: 100%;
+}
+
+/* --- Responsivité (Mobiles et Tablettes) --- */
+@media (max-width: 992px) {
+  /* Sur les écrans plus petits, les deux widgets du bas repassent l'un en dessous de l'autre */
+  .widgets-half-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Carte Widget */
@@ -1636,4 +1662,615 @@ button.primary:hover {
 
 [dir="rtl"] {
   font-family: 'Calibri', 'Segoe UI', 'Arial', sans-serif;
+}
+/* ---------- Widget WhatsApp Flottant ---------- */
+.whatsapp-float {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #25D366;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  z-index: 999;
+  transition: transform 0.3s;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.1);
+}
+
+.whatsapp-tooltip {
+  position: absolute;
+  right: 70px;
+  background: #1f2937;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.whatsapp-float:hover .whatsapp-tooltip {
+  opacity: 1;
+}
+
+/* ---------- Pop-up de sortie ---------- */
+.exit-popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.exit-popup {
+  background: rgba(20,30,45,0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 32px;
+  padding: 32px;
+  max-width: 450px;
+  width: 100%;
+  position: relative;
+  backdrop-filter: blur(12px);
+  text-align: center;
+}
+
+.close-popup {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.exit-popup h3 { margin-bottom: 8px; }
+.exit-popup p { color: #cbd5e1; margin-bottom: 24px; }
+.exit-popup input {
+  margin-bottom: 16px;
+  padding: 14px 18px;
+}
+.exit-popup .privacy-note {
+  font-size: 0.8rem;
+  margin-top: 16px;
+  color: #94a3b8;
+}
+
+/* ---------- Témoignages et FAQ ---------- */
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+.testimonial-card {
+  background: rgba(255,255,255,0.03);
+  border-radius: 24px;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.stars { margin-bottom: 12px; }
+.author { color: #60a5fa; margin-top: 12px; display: block; }
+
+.faq-list { max-width: 800px; margin: 0 auto; }
+.faq-item { border-bottom: 1px solid rgba(255,255,255,0.1); }
+.faq-question {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 20px 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.faq-icon { transition: transform 0.3s; }
+.faq-icon.open { transform: rotate(90deg); }
+.faq-answer { padding: 0 0 20px 0; color: #cbd5e1; }
+
+/* ---------- Preuve sociale ---------- */
+.social-proof-section {
+  padding: 40px 20px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.trust-badges {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a3c6ff;
+}
+.partners { text-align: center; }
+.partner-logos {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  color: #9ca3af;
+}
+
+/* Mobile optimisations */
+@media (max-width: 768px) {
+  .whatsapp-float { bottom: 20px; right: 20px; }
+  .hero-buttons { flex-direction: column; }
+}
+/* ---------- Miniature d'image sur les cartes Secrets ---------- */
+.secret-thumbnail {
+  width: 65px;
+  height: 40px;
+  object-fit: cover; /* Assure que l'image n'est pas déformée */
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.secret-item-glass:hover .secret-thumbnail {
+  transform: scale(1.1); /* Petit effet de zoom élégant au survol */
+  border-color: var(--primary);
+}
+/* ---------- Widget Liens - Vue Play Store ---------- */
+.playstore-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.playstore-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+}
+
+.ps-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.ps-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.ps-info {
+  flex: 1;
+}
+
+.ps-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.ps-desc {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin-top: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ps-action-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.ps-action-btn:hover {
+  background: var(--primary-dark);
+}
+
+.ps-stats {
+  display: flex;
+  gap: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 12px;
+  flex-wrap: wrap;
+}
+
+.ps-stat-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.ps-stat-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.ps-stat-btn.active-like { color: #10b981; }
+.ps-stat-btn.active-dislike { color: #ef4444; }
+
+/* Section Avis */
+.ps-reviews-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.ps-review-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.ps-review-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.ps-review-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.ps-review-author {
+  color: #a3c6ff;
+  font-weight: 500;
+}
+
+.ps-review-text {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+}
+
+.ps-review-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ps-review-form input {
+  margin-bottom: 0;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+/* ---------- Mises à jour Play Store (Votes & Avis) ---------- */
+
+/* Couleurs actives pour les votes de l'utilisateur connecté */
+.ps-stat-btn.user-liked { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.ps-stat-btn.user-disliked { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+/* Accordéon des avis */
+.ps-reviews-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 12px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Zone scrollable pour ne pas occuper tout l'écran */
+.ps-reviews-list {
+  max-height: 150px; /* Limite la hauteur à environ 2-3 commentaires */
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-bottom: 12px;
+}
+
+/* Scrollbar discrète pour les avis */
+.ps-reviews-list::-webkit-scrollbar { width: 4px; }
+.ps-reviews-list::-webkit-scrollbar-track { background: transparent; }
+.ps-reviews-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+/* ---------- Widget Chat (Votes & Actions) ---------- */
+.message-container-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.msg-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.msg-action-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.msg-action-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.msg-action-btn.user-liked { color: #10b981; }
+.msg-action-btn.user-disliked { color: #ef4444; }
+
+.msg-delete-btn { color: #ef4444; opacity: 0.7; }
+.msg-delete-btn:hover { opacity: 1; background: rgba(239, 68, 68, 0.15); }
+
+/* On adapte la largeur de la bulle si elle est dans un wrapper */
+.message-container-wrapper .message-content {
+  max-width: 100%;
+}
+/* ---------- Widget Chat (Médias et Audio) ---------- */
+
+/* Zone d'enregistrement audio */
+.recording-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 20px;
+  padding: 4px 16px;
+  animation: pulseBg 2s infinite;
+}
+
+@keyframes pulseBg {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Canvas de l'onde progressive */
+.visualizer {
+  height: 30px;
+  flex: 1;
+  width: 100%;
+}
+
+.recording-time {
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Boutons de l'input chat */
+.chat-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mic-btn {
+  background: transparent;
+  color: #a3c6ff;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.mic-btn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.mic-btn.recording {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+/* Médias dans les bulles de discussion */
+.msg-media {
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.msg-media img {
+  max-width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+
+.msg-media audio {
+  width: 100%;
+  height: 40px;
+  outline: none;
+  border-radius: 8px;
+}
+
+/* On personnalise le lecteur audio par défaut du navigateur */
+.msg-media audio::-webkit-media-controls-panel {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.msg-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #60a5fa;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.msg-file:hover {
+  background: rgba(0, 0, 0, 0.3);
+  text-decoration: underline;
+}
+/* CardView Blanc (Les autres, à gauche) */
+.message-content {
+  background: #ffffff;
+  padding: 8px 12px;
+  border-radius: 0 12px 12px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  max-width: 100%;
+}
+
+/* CardView Vert Clair (Vous, à droite) */
+.message.own .message-content {
+  background: #dcf8c6; 
+  border-radius: 12px 0 12px 12px;
+}
+
+/* --- LE FIX EST ICI : On force le texte en noir profond --- */
+.message-content p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-break: break-word;
+  color: #111b21 !important; /* Noir profond façon WhatsApp */
+}
+
+/* Couleur des noms adaptée aux fonds clairs */
+.message .name {
+  color: #2563eb !important; /* Bleu pour les autres */
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.message.own .name {
+  color: #047857 !important; /* Vert foncé pour vos propres messages */
+}
+
+.message p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Adaptation des actions (Likes/Corbeille) pour qu'elles soient visibles sous les bulles */
+.msg-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+/* ---------- Prévisualisation du média avant envoi ---------- */
+.chat-input-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+}
+
+.pending-media-preview {
+  position: absolute;
+  bottom: 100%; /* S'affiche juste au-dessus de l'input */
+  left: 0;
+  right: 0;
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 12px;
+  border-radius: 16px 16px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+}
+
+.pending-media-preview img {
+  height: 60px;
+  width: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.pending-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #60a5fa;
+  background: rgba(0,0,0,0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.close-pending-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+}
+.close-pending-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
 }
