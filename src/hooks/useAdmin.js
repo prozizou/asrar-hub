@@ -1,9 +1,9 @@
 import { auth } from "../firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
 
 const ADMIN_EMAIL = "prozizou298@gmail.com";
 
 export const useAdmin = () => {
-  const [user] = useAuthState(auth);
+  // On récupère l'utilisateur de manière synchrone, sans créer d'écouteur lourd
+  const user = auth.currentUser;
   return user?.email === ADMIN_EMAIL;
 };

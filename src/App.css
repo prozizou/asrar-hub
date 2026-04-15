@@ -2274,3 +2274,130 @@ button.primary:hover {
 .close-pending-btn:hover {
   background: rgba(239, 68, 68, 0.2);
 }
+/* ---------- Toggle Vue (Liste / Grille) ---------- */
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.view-toggle button {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-toggle button:hover {
+  color: #e2e8f0;
+}
+
+.view-toggle button.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* ---------- VUE LISTE ---------- */
+.secrets-layout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.list-view-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  width: 100%;
+}
+
+.secret-thumbnail-list {
+  width: 65px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* ---------- VUE GRILLE ---------- */
+.secrets-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* En mode grille, on enlève le padding par défaut pour que l'image touche les bords */
+.secrets-layout-grid .secret-item-glass {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.grid-view-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.grid-card-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex: 1; /* Pousse l'image vers le bas si le texte est court */
+}
+
+/* La fameuse partie basse centrée pour l'image */
+.grid-image-container {
+  width: 100%;
+  height: 160px; /* Hauteur généreuse pour l'image */
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.secret-thumbnail-grid {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Remplit l'espace sans déformer l'image */
+}
+/* ---------- Mode Focus (Agrandissement des Widgets) ---------- */
+.widget-maximized {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999;
+  border-radius: 0 !important;
+  background: rgba(11, 15, 25, 0.98) !important;
+  backdrop-filter: blur(24px) !important;
+  padding: 24px !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ajustement dynamique des hauteurs quand on est en plein écran */
+.widget-maximized .messages-container {
+  height: calc(100vh - 200px) !important;
+}
+
+.widget-maximized .secrets-list-glass,
+.widget-maximized .liens-list-playstore {
+  max-height: calc(100vh - 220px) !important;
+}

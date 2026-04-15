@@ -5,9 +5,18 @@ const CloudinaryUploader = ({ onUploadSuccess, buttonText = "Télécharger un m�
   const widgetRef = useRef();
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // ASTUCE PRO : On garde toujours la dernière version de la fonction en mémoire
+  // sans déclencher de rechargement (re-render) du widget Cloudinary
+  const onUploadSuccessRef = useRef(onUploadSuccess);
   useEffect(() => {
-    // Fonction pour initialiser le widget une fois que Cloudinary est bien là
+    onUploadSuccessRef.current = onUploadSuccess;
+  }, [onUploadSuccess]);
+
+  useEffect(() => {
     const initWidget = () => {
+      // On s'assure de ne pas créer le widget en double
+      if (widgetRef.current) return;
+
       cloudinaryRef.current = window.cloudinary;
       widgetRef.current = cloudinaryRef.current?.createUploadWidget(
         {
@@ -20,7 +29,8 @@ const CloudinaryUploader = ({ onUploadSuccess, buttonText = "Télécharger un m�
         },
         (error, result) => {
           if (!error && result && result.event === "success") {
-            onUploadSuccess(result.info.secure_url);
+            // On utilise la fonction stockée en mémoire
+            onUploadSuccessRef.current(result.info.secure_url);
           }
           if (error) {
             console.error("Erreur Cloudinary:", error);
@@ -30,27 +40,17 @@ const CloudinaryUploader = ({ onUploadSuccess, buttonText = "Télécharger un m�
       setIsLoaded(true);
     };
 
-    // Vérifier si le script existe déjà
     if (!window.cloudinary) {
       const script = document.createElement('script');
       script.src = 'https://upload-widget.cloudinary.com/global/all.js';
       script.async = true;
-      
-      // On écoute la fin du chargement du script avant d'initialiser !
-      script.onload = () => {
-        initWidget();
-      };
-      
-      script.onerror = () => {
-        console.error("Échec du chargement du script Cloudinary");
-      };
-      
+      script.onload = () => initWidget();
+      script.onerror = () => console.error("Échec du chargement du script Cloudinary");
       document.body.appendChild(script);
     } else {
-      // S'il est déjà là (par ex: on change de page et on revient), on initialise direct
       initWidget();
     }
-  }, [onUploadSuccess]);
+  }, []); // <--- LE SECRET EST ICI : Le tableau vide empêche le rechargement à chaque frappe de clavier !
 
   const handleClick = () => {
     if (widgetRef.current) {
