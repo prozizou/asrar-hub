@@ -2401,3 +2401,18 @@ button.primary:hover {
 .widget-maximized .liens-list-playstore {
   max-height: calc(100vh - 220px) !important;
 }
+/* ----- FIX VUE GRILLE SECRETS ----- */
+.secrets-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.secrets-layout-grid .secret-item-glass {
+  padding: 0 !important;
+  margin-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px; /* Assure que la carte reste carrée */
+}
